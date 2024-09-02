@@ -1,0 +1,36 @@
+name: Pull request review build
+
+on:
+  push:
+    branches:
+      - '!main'
+  pull_request:
+
+jobs:
+  pr_review:
+    runs-on: ubuntu-latest
+          
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20  
+    - name: Install packages
+      run: |-
+        npm install
+    - name: Unit tests
+      run: |-
+        npm run test:unit
+    - name: Vite build
+      run: |-
+         npm run build-only
+    - name: Typescript type check
+      run: |-
+         npm run type-check
+    - name: ESLint check
+      run: |-
+         npm run lint
+    - name: Prettier check
+      run: |-
+         npm run format-check
