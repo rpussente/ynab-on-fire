@@ -24,13 +24,13 @@ jobs:
         npm run test:unit
     - name: Vite build
       run: |-
-         npm build-only
+         npm run build-only
     - name: Typescript type check
       run: |-
-         npm type-check lint format-check
+         npm run type-check
     - name: ESLint check
       run: |-
-         npm lint
+         npm run lint
     - name: Prettier check
       run: |-
-         npm format-check
+         npm run format-check
