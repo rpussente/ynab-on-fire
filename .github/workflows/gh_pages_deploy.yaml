@@ -6,13 +6,13 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: "Check-out the content of the repository"
+      - name: Checkout
         uses: actions/checkout@v4
-      - name: "Install Node.js"
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: "Install dependencies, then build output JS bundle"
+      - name: Install dependencies, then build output JS bundle
         run: |
           npm install
           npm run build --if-present
