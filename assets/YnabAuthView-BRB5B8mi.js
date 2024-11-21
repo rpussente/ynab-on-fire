@@ -1,0 +1,1 @@
+import{d as s,u as a,o as n,c as r,a as u,b as c}from"./index-BYpBnX7K.js";const _=s({__name:"YnabAuthView",setup(i){const e=c(),t=a();t.isAuthorised&&e.push("/");function o(){t.markAuthorised(),e.push("/")}return(h,p)=>(n(),r("main",null,[u("button",{onClick:o},"Authorise with Ynab")]))}});export{_ as default};
