@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
+import { useYnabStore } from './stores/ynab'
+
+const ynab = useYnabStore()
 </script>
 
 <template>
@@ -12,6 +15,7 @@ import HelloWorld from './components/HelloWorld.vue'
 
       <nav>
         <RouterLink to="/">Home</RouterLink>
+        <RouterLink v-if="!ynab.isAuthorised" to="/ynab-auth">Authorise with YNAB</RouterLink>
         <RouterLink to="/about">About</RouterLink>
       </nav>
     </div>
