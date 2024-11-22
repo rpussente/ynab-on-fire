@@ -12,13 +12,19 @@ jobs:
     # yolo: we don't allow external users to run workflows
     # if: ${{ github.actor == 'dependabot[bot]' }}
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{vars.WORKFLOW_RUNNER_APP_ID}}
+          private-key: ${{secrets.WORKFLOW_RUNNER_APP_KEY}}
       - name: Approve pull request
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{steps.generate-token.outputs.token}}
       - name: Enable auto-merge
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{steps.generate-token.outputs.token}}
