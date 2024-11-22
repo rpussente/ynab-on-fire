@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import jsonConfig from '../ynab.config.json'
 
 export interface Ynab {
   clientId: string
@@ -10,12 +11,12 @@ export interface Ynab {
 
 export const useYnabStore = defineStore('ynab', () => {
   const ynab = ref<Ynab>({
-    clientId: 'client-id',
-    redirectUri: 'redirect-uri'
+    clientId: jsonConfig.clientId,
+    redirectUri: jsonConfig.redirectUri
   })
   const isAuthorised = computed(() => ynab.value.token != null)
   function markAuthorised() {
     ynab.value.token = 'fake'
   }
-  return { isAuthorised, markAuthorised }
+  return { ynab, isAuthorised, markAuthorised }
 })

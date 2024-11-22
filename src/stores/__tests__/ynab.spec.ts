@@ -20,4 +20,10 @@ describe('ynab store', () => {
     ynab.markAuthorised()
     expect(ynab.isAuthorised).toBe(true)
   })
+
+  it('loads the configuration', () => {
+    const ynab = useYnabStore()
+    expect(ynab.ynab.clientId).toBeTruthy()
+    expect(ynab.ynab.redirectUri).toBeTruthy()
+  })
 })
