@@ -10,7 +10,7 @@ if (ynabStore.isAuthorised) {
 }
 
 function authorise() {
-  ynabStore.markAuthorised()
+  ynabStore.markAuthorised('fake-token')
   router.push('/')
 }
 </script>
