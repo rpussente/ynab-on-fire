@@ -7,9 +7,9 @@ permissions:
   pull-requests: write
 
 jobs:
-  dependabot:
+  enable-auto-merge:
     runs-on: ubuntu-latest
-    # yolo
+    # yolo: we don't allow external users to run workflows
     # if: ${{ github.actor == 'dependabot[bot]' }}
     steps:
       - name: Approve pull request
