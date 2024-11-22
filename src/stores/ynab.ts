@@ -14,9 +14,13 @@ export const useYnabStore = defineStore('ynab', () => {
     clientId: jsonConfig.clientId,
     redirectUri: jsonConfig.redirectUri
   })
+  const authUri = computed(
+    () =>
+      `https://app.ynab.com/oauth/authorize?client_id=${ynab.value.clientId}&redirect_uri=${ynab.value.redirectUri}&response_type=token`
+  )
   const isAuthorised = computed(() => ynab.value.token != null)
   function markAuthorised() {
     ynab.value.token = 'fake'
   }
-  return { ynab, isAuthorised, markAuthorised }
+  return { ynab, authUri, isAuthorised, markAuthorised }
 })
