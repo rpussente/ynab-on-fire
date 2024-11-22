@@ -15,7 +15,7 @@ const ynab = useYnabStore()
 
       <nav>
         <RouterLink to="/">Home</RouterLink>
-        <RouterLink v-if="!ynab.isAuthorised" to="/ynab-auth">Authorise with YNAB</RouterLink>
+        <a v-bind:href="ynab.authUri" v-if="!ynab.isAuthorised">Authorise with YNAB</a>
         <RouterLink to="/about">About</RouterLink>
       </nav>
     </div>
