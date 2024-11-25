@@ -29,7 +29,7 @@ describe('App', () => {
     await router.isReady()
 
     expect(ynab.isAuthorised).toBe(true)
-    expect(ynab.ynab.token).toBe('token-value')
+    expect(ynab.accessToken).toBe('token-value')
 
     // Required to wait for router.push
     await flushPromises()
