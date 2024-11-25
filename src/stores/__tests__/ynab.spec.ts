@@ -41,7 +41,7 @@ describe('ynab store', () => {
 
   it('loads the configuration', () => {
     const ynab = useYnabStore()
-    expect(ynab.ynab.clientId).toBeTruthy()
-    expect(ynab.ynab.redirectUri).toBeTruthy()
+    expect(ynab.apiConfig.clientId).toBeTruthy()
+    expect(ynab.apiConfig.redirectUri).toBeTruthy()
   })
 })
