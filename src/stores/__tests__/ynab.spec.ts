@@ -19,7 +19,7 @@ describe('ynab store', () => {
     const ynab = useYnabStore()
     ynab.markAuthorised('token-value')
     expect(ynab.isAuthorised).toBe(true)
-    expect(ynab.ynab.token).toBe('token-value')
+    expect(ynab.accessToken).toBe('token-value')
   })
 
   it('loads the configuration', () => {
