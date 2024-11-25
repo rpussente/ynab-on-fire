@@ -29,7 +29,7 @@ function findYnabToken() {
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <header class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
       <RouterLink to="/" class="navbar-brand">Home</RouterLink>
       <button
@@ -56,6 +56,8 @@ function findYnabToken() {
         </ul>
       </div>
     </div>
-  </nav>
-  <RouterView />
+  </header>
+  <div class="container-fluid">
+    <RouterView />
+  </div>
 </template>
