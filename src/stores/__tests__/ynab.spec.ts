@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, it, expect } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { flushPromises } from '@vue/test-utils'
-import { useSessionStorage } from '@vueuse/core'
 import { useYnabStore, YNAB_ACCESS_TOKEN } from '../ynab'
 
 describe('ynab store', () => {
