@@ -26,11 +26,32 @@ export const useYnabStore = defineStore('ynab', () => {
   function markAuthorised(token: string) {
     accessToken.value = token
     api.value = new ynab.api(token)
+    loadBudgets()
   }
 
-  if (isAuthorised) {
+  if (isAuthorised.value) {
     api.value = new ynab.api(accessToken.value)
+    loadBudgets()
   }
 
-  return { apiConfig, accessToken, authUri, isAuthorised, markAuthorised }
+  const loading = ref(false)
+  const error = ref()
+  const budgets = ref<ynab.BudgetSummary[]>([])
+  function loadBudgets() {
+    if (api.value != null) {
+      api.value.budgets
+        .getBudgets()
+        .then((res) => {
+          budgets.value = res.data.budgets
+        })
+        .catch((err) => {
+          error.value = err.error.detail
+        })
+        .finally(() => {
+          loading.value = false
+        })
+    }
+  }
+
+  return { apiConfig, accessToken, authUri, isAuthorised, markAuthorised, budgets }
 })
