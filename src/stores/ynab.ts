@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { useSessionStorage } from '@vueuse/core'
 import jsonConfig from '../ynab.config.json'
 
-const YNAB_ACCESS_TOKEN = 'YNAB_ACCESS_TOKEN'
+export const YNAB_ACCESS_TOKEN = 'YNAB_ACCESS_TOKEN'
 
 export interface Ynab {
   clientId: string
