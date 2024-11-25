@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router'
 import { useYnabStore } from './stores/ynab'
+import 'bootstrap/dist/css/bootstrap.css'
 
 const route = useRoute()
 const router = useRouter()
@@ -28,15 +29,33 @@ function findYnabToken() {
 </script>
 
 <template>
-  <header>
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <a v-bind:href="ynab.authUri" v-if="!ynab.isAuthorised">Authorise with YNAB</a>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <RouterLink to="/" class="navbar-brand">Home</RouterLink>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div id="navbarNav" class="collapse navbar-collapse">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" v-bind:href="ynab.authUri" v-if="!ynab.isAuthorised">
+              Authorise with YNAB
+            </a>
+          </li>
+          <li class="nav-item">
+            <RouterLink to="/about" class="nav-link">About</RouterLink>
+          </li>
+        </ul>
+      </div>
     </div>
-  </header>
-
+  </nav>
   <RouterView />
 </template>
