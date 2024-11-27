@@ -7,7 +7,7 @@ import BudgetList from '@/components/BudgetList.vue'
 
 import { useYnabStore } from '@/stores/ynab'
 
-describe('App', () => {
+describe('HomeView', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
   })
