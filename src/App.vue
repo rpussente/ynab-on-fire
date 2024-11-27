@@ -50,21 +50,16 @@ function findYnabToken() {
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" v-bind:href="ynab.authUri" v-if="!ynab.isAuthorised">
-              Authorise with YNAB
+          <li class="nav-item" v-if="!ynab.isAuthorised">
+            <a class="nav-link" v-bind:href="ynab.authUri"> Authorise with YNAB </a>
+          </li>
+          <li class="nav-item" v-else-if="ynab.selectedBudget">
+            <a id="budget_switch" href="#" class="nav-link" v-on:click="ynab.clearSelectedBudget()">
+              Budget {{ ynab.selectedBudget?.name }}
             </a>
-            <a
-              id="budget_switch"
-              class="nav-link"
-              v-on:click="ynab.clearSelectedBudget()"
-              v-else-if="ynab.selectedBudget"
-            >
-              Budget {{ ynab.selectedBudget.name }}
-            </a>
-            <a id="logout" class="nav-link" v-on:click="ynab.logout()" v-if="ynab.isAuthorised">
-              Logout
-            </a>
+          </li>
+          <li class="nav-item" v-if="ynab.isAuthorised">
+            <a id="logout" href="#" class="nav-link" v-on:click="ynab.logout()"> Logout </a>
           </li>
         </ul>
       </div>
