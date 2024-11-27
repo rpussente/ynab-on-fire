@@ -54,8 +54,8 @@ function findYnabToken() {
             <a class="nav-link" v-bind:href="ynab.authUri" v-if="!ynab.isAuthorised">
               Authorise with YNAB
             </a>
-            <a class="nav-link" v-else-if="ynab.selectedBudget">
-              Using: {{ ynab.selectedBudget.name }}
+            <a id="budget_switch" class="nav-link" v-on:click="ynab.clearSelectedBudget()" v-else-if="ynab.selectedBudget">
+              Budget {{ ynab.selectedBudget.name }}
             </a>
           </li>
         </ul>

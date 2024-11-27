@@ -37,4 +37,19 @@ describe('App', () => {
     expect(wrapper.vm.$route.path).toBe('/')
     expect(wrapper.vm.$route.hash).toBe('')
   })
+
+  it('clears selected budget', async() => {
+    const ynab = useYnabStore()
+    ynab.markAuthorised('test-token')
+    ynab.selectedBudget = {
+      id:' budget_1',
+      name: 'Budget 1'
+    }
+
+    const wrapper = mount(App, { global: { plugins: [router] } })
+
+    await wrapper.find('#budget_switch').trigger('click')
+
+    expect(ynab.selectedBudget).toBeUndefined()
+  })
 })
