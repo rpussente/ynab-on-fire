@@ -65,5 +65,15 @@ export const useYnabStore = defineStore('ynab', () => {
     }
   }
 
-  return { apiConfig, accessToken, authUri, isAuthorised, markAuthorised, logout, selectedBudget, clearSelectedBudget, budgets }
+  return {
+    apiConfig,
+    accessToken,
+    authUri,
+    isAuthorised,
+    markAuthorised,
+    logout,
+    selectedBudget,
+    clearSelectedBudget,
+    budgets
+  }
 })

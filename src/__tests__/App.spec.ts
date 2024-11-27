@@ -38,11 +38,11 @@ describe('App', () => {
     expect(wrapper.vm.$route.hash).toBe('')
   })
 
-  it('clears selected budget', async() => {
+  it('clears selected budget', async () => {
     const ynab = useYnabStore()
     ynab.markAuthorised('test-token')
     ynab.selectedBudget = {
-      id:' budget_1',
+      id: 'budget_1',
       name: 'Budget 1'
     }
 
