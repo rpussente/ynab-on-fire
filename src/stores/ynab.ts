@@ -28,6 +28,11 @@ export const useYnabStore = defineStore('ynab', () => {
     api.value = new ynab.api(token)
     loadBudgets()
   }
+  function logout() {
+    accessToken.value = null
+    budgets.value = []
+    selectedBudget.value = undefined
+  }
 
   if (isAuthorised.value) {
     api.value = new ynab.api(accessToken.value)
@@ -60,5 +65,5 @@ export const useYnabStore = defineStore('ynab', () => {
     }
   }
 
-  return { apiConfig, accessToken, authUri, isAuthorised, markAuthorised, selectedBudget, clearSelectedBudget, budgets }
+  return { apiConfig, accessToken, authUri, isAuthorised, markAuthorised, logout, selectedBudget, clearSelectedBudget, budgets }
 })

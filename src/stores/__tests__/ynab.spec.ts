@@ -43,4 +43,27 @@ describe('ynab store', () => {
     expect(ynab.apiConfig.clientId).toBeTruthy()
     expect(ynab.apiConfig.redirectUri).toBeTruthy()
   })
+
+  it('logs out', async () => {
+    const ynab = useYnabStore()
+    ynab.markAuthorised('test-token')
+    ynab.selectedBudget = {
+      id: 'budget_id',
+      name: 'Budget Name'
+    }
+    ynab.budgets = [ynab.selectedBudget]
+
+    // the token is written async
+    await flushPromises()
+
+    ynab.logout()
+
+    // the token is written async
+    await flushPromises()
+
+    expect(ynab.isAuthorised).toBe(false)
+    expect(ynab.budgets).toBe([])
+    expect(ynab.selectedBudget).toBeUndefined()
+    expect(sessionStorage.getItem(YNAB_ACCESS_TOKEN)).toBe(null)
+  })
 })
