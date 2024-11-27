@@ -26,7 +26,7 @@ describe('App', () => {
     ]
 
     const wrapper = mount(HomeView)
-    
+
     await wrapper.find('#budget_2').trigger('click')
 
     expect(ynabStore.selectedBudget?.id).toBe('budget_2')
