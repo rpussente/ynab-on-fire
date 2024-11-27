@@ -62,7 +62,7 @@ describe('ynab store', () => {
     await flushPromises()
 
     expect(ynab.isAuthorised).toBe(false)
-    expect(ynab.budgets).toBe([])
+    expect(ynab.budgets).toStrictEqual([])
     expect(ynab.selectedBudget).toBeUndefined()
     expect(sessionStorage.getItem(YNAB_ACCESS_TOKEN)).toBe(null)
   })
