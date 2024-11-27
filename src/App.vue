@@ -29,7 +29,7 @@ function findYnabToken() {
 </script>
 
 <template>
-  <header class="navbar navbar-expand-lg bg-body-tertiary">
+  <header class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
     <div class="container-fluid">
       <RouterLink to="/" class="navbar-brand">Home</RouterLink>
       <button
@@ -44,14 +44,19 @@ function findYnabToken() {
         <span class="navbar-toggler-icon"></span>
       </button>
       <div id="navbarNav" class="collapse navbar-collapse">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <RouterLink to="/about" class="nav-link">About</RouterLink>
+          </li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
           <li class="nav-item">
             <a class="nav-link" v-bind:href="ynab.authUri" v-if="!ynab.isAuthorised">
               Authorise with YNAB
             </a>
-          </li>
-          <li class="nav-item">
-            <RouterLink to="/about" class="nav-link">About</RouterLink>
+            <a class="nav-link" v-else-if="ynab.selectedBudget">
+              Using: {{ ynab.selectedBudget.name }}
+            </a>
           </li>
         </ul>
       </div>

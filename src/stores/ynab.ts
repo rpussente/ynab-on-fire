@@ -36,7 +36,9 @@ export const useYnabStore = defineStore('ynab', () => {
 
   const loading = ref(false)
   const error = ref()
+
   const budgets = ref<ynab.BudgetSummary[]>([])
+  const selectedBudget = ref<ynab.BudgetSummary>()
   function loadBudgets() {
     if (api.value != null) {
       api.value.budgets
@@ -53,5 +55,5 @@ export const useYnabStore = defineStore('ynab', () => {
     }
   }
 
-  return { apiConfig, accessToken, authUri, isAuthorised, markAuthorised, budgets }
+  return { apiConfig, accessToken, authUri, isAuthorised, markAuthorised, selectedBudget, budgets }
 })
