@@ -4,7 +4,12 @@ const ynab = useYnabStore()
 </script>
 
 <template>
-  <li v-for="budget in ynab.budgets" v-bind:key="budget.id">
+  <a
+    v-for="budget in ynab.budgets"
+    v-bind:id="budget.id"
+    v-bind:key="budget.id"
+    v-on:click="ynab.selectedBudget = budget"
+  >
     {{ budget.name }}
-  </li>
+  </a>
 </template>
