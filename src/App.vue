@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router'
 import { useYnabStore } from './stores/ynab'
-import 'bootstrap/dist/css/bootstrap.css'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,43 +28,144 @@ function findYnabToken() {
 </script>
 
 <template>
-  <header class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
-    <div class="container-fluid">
-      <RouterLink to="/" class="navbar-brand">Home</RouterLink>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarNav"
-        aria-controls="navbarNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div id="navbarNav" class="collapse navbar-collapse">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item">
-            <RouterLink to="/about" class="nav-link">About</RouterLink>
-          </li>
-        </ul>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item" v-if="!ynab.isAuthorised">
-            <a class="nav-link" v-bind:href="ynab.authUri"> Authorise with YNAB </a>
-          </li>
-          <li class="nav-item" v-else-if="ynab.selectedBudget">
-            <a id="budget_switch" href="#" class="nav-link" v-on:click="ynab.clearSelectedBudget()">
-              Budget {{ ynab.selectedBudget?.name }}
-            </a>
-          </li>
-          <li class="nav-item" v-if="ynab.isAuthorised">
-            <a id="logout" href="#" class="nav-link" v-on:click="ynab.logout()"> Logout </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </header>
-  <div class="container-fluid">
-    <RouterView />
+  <div class="app-shell">
+    <header class="navbar">
+      <RouterLink to="/" class="navbar-brand">
+        <span class="brand-icon">🔥</span>
+        <span class="brand-name">YNAB on Fire</span>
+      </RouterLink>
+
+      <nav class="navbar-nav">
+        <RouterLink to="/about" class="nav-link">About</RouterLink>
+
+        <template v-if="!ynab.isAuthorised">
+          <a class="nav-link nav-cta" :href="ynab.authUri">Authorise with YNAB</a>
+        </template>
+
+        <template v-else>
+          <a
+            v-if="ynab.selectedBudget"
+            id="budget_switch"
+            href="#"
+            class="nav-link"
+            @click.prevent="ynab.clearSelectedBudget()"
+          >
+            📊 {{ ynab.selectedBudget.name }}
+          </a>
+          <a id="logout" href="#" class="nav-link nav-logout" @click.prevent="ynab.logout()">
+            Logout
+          </a>
+        </template>
+      </nav>
+    </header>
+
+    <main>
+      <RouterView />
+    </main>
   </div>
 </template>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #0d0f1a;
+  color: #e2e8f0;
+  font-family: 'Inter', sans-serif;
+}
+
+a {
+  text-decoration: none;
+}
+</style>
+
+<style scoped>
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar */
+.navbar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.75rem;
+  background: rgba(13, 15, 26, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #f1f5f9;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.brand-icon {
+  font-size: 1.25rem;
+  filter: drop-shadow(0 0 8px rgba(251, 146, 60, 0.7));
+}
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.nav-link {
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #94a3b8;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.nav-link:hover {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-cta {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff !important;
+  font-weight: 600;
+  padding: 0.4rem 1rem;
+}
+
+.nav-cta:hover {
+  background: linear-gradient(135deg, #4f52d4, #7c3aed);
+  color: #fff;
+}
+
+.nav-logout {
+  color: #ef4444;
+}
+
+.nav-logout:hover {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+main {
+  flex: 1;
+}
+</style>
