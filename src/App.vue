@@ -29,9 +29,14 @@ function findYnabToken() {
 
 <template>
   <header class="bg-slate-900 shadow-md">
-    <div class="container mx-auto flex flex-wrap items-center justify-between p-4 px-6 md:flex-nowrap">
+    <div
+      class="container mx-auto flex flex-wrap items-center justify-between p-4 px-6 md:flex-nowrap"
+    >
       <div class="flex items-center space-x-8">
-        <RouterLink to="/" class="text-xl font-medium text-white hover:opacity-80 transition-opacity">
+        <RouterLink
+          to="/"
+          class="text-xl font-medium text-white hover:opacity-80 transition-opacity"
+        >
           Home
         </RouterLink>
         <nav>
@@ -52,11 +57,20 @@ function findYnabToken() {
           </a>
         </template>
         <template v-else-if="ynab.selectedBudget">
-          <button id="budget_switch" class="text-slate-400 hover:text-white transition-colors" v-on:click="ynab.clearSelectedBudget()">
+          <button
+            id="budget_switch"
+            class="text-slate-400 hover:text-white transition-colors"
+            v-on:click="ynab.clearSelectedBudget()"
+          >
             Budget {{ ynab.selectedBudget?.name }}
           </button>
         </template>
-        <button v-if="ynab.isAuthorised" id="logout" class="text-slate-400 hover:text-white transition-colors" v-on:click="ynab.logout()">
+        <button
+          v-if="ynab.isAuthorised"
+          id="logout"
+          class="text-slate-400 hover:text-white transition-colors"
+          v-on:click="ynab.logout()"
+        >
           Logout
         </button>
       </div>
