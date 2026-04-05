@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router'
 import { useYnabStore } from './stores/ynab'
-import 'bootstrap/dist/css/bootstrap.css'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,43 +28,56 @@ function findYnabToken() {
 </script>
 
 <template>
-  <header class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
-    <div class="container-fluid">
-      <RouterLink to="/" class="navbar-brand">Home</RouterLink>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarNav"
-        aria-controls="navbarNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div id="navbarNav" class="collapse navbar-collapse">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item">
-            <RouterLink to="/about" class="nav-link">About</RouterLink>
-          </li>
-        </ul>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item" v-if="!ynab.isAuthorised">
-            <a class="nav-link" v-bind:href="ynab.authUri"> Authorise with YNAB </a>
-          </li>
-          <li class="nav-item" v-else-if="ynab.selectedBudget">
-            <a id="budget_switch" href="#" class="nav-link" v-on:click="ynab.clearSelectedBudget()">
-              Budget {{ ynab.selectedBudget?.name }}
-            </a>
-          </li>
-          <li class="nav-item" v-if="ynab.isAuthorised">
-            <a id="logout" href="#" class="nav-link" v-on:click="ynab.logout()"> Logout </a>
-          </li>
-        </ul>
+  <header class="bg-slate-900 shadow-md">
+    <div
+      class="container mx-auto flex flex-wrap items-center justify-between p-4 px-6 md:flex-nowrap"
+    >
+      <div class="flex items-center space-x-8">
+        <RouterLink
+          to="/"
+          class="text-xl font-medium text-white hover:opacity-80 transition-opacity"
+        >
+          Home
+        </RouterLink>
+        <nav>
+          <ul class="flex space-x-6">
+            <li>
+              <RouterLink to="/about" class="text-slate-400 hover:text-white transition-colors">
+                About
+              </RouterLink>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="flex items-center space-x-6">
+        <template v-if="!ynab.isAuthorised">
+          <a class="text-slate-400 hover:text-white transition-colors" v-bind:href="ynab.authUri">
+            Authorise with YNAB
+          </a>
+        </template>
+        <template v-else-if="ynab.selectedBudget">
+          <button
+            id="budget_switch"
+            class="text-slate-400 hover:text-white transition-colors"
+            v-on:click="ynab.clearSelectedBudget()"
+          >
+            Budget {{ ynab.selectedBudget?.name }}
+          </button>
+        </template>
+        <button
+          v-if="ynab.isAuthorised"
+          id="logout"
+          class="text-slate-400 hover:text-white transition-colors"
+          v-on:click="ynab.logout()"
+        >
+          Logout
+        </button>
       </div>
     </div>
   </header>
-  <div class="container-fluid">
+
+  <div class="container mx-auto p-6">
     <RouterView />
   </div>
 </template>
