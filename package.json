@@ -16,9 +16,11 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
+    "@tailwindcss/vite": "^4.2.2",
     "@vueuse/core": "^11.3.0",
     "bootstrap": "^5.3.3",
     "pinia": "^2.1.7",
+    "tailwindcss": "^4.2.2",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3",
     "ynab": "^2.2.0"
