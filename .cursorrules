@@ -1,0 +1,17 @@
+# Antigravity AI Assistant Rules
+
+Follow these project-specific guidelines for `ynab-on-fire`:
+
+## Pull Requests
+1.  **Do not create pull requests without explicit permission** from the user. Even if a feature is complete, ask for permission before using `gh pr create`.
+2.  **All pull requests must be created in draft mode.** Use `gh pr create --draft` for all new pull requests.
+3.  **Use real newlines in pull request descriptions.** Do not use `\n` to represent enters; characters must be properly formatted for readability.
+
+## Commits
+1.  **Always run `make check` before committing any changes.** This ensures that code formatting, linting, and type-checking are all passing.
+
+## Code Style & Architecture
+* Follow standard Vue 3 / Vite patterns.
+* Prefer idiomatic TypeScript for all logic.
+* Ensure all changes follow the established UI design system.
+* For CSS styling, use Tailwind CSS. Avoid changing global styles in `App.vue` or `HomeView.vue` unless explicitly told to do so.
