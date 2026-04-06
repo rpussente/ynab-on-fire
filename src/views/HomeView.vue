@@ -1,9 +1,20 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { useYnabStore } from '@/stores/ynab'
 import BudgetList from '@/components/BudgetList.vue'
+import AccountList from '@/components/AccountList.vue'
 import LockIcon from '@/components/icons/LockIcon.vue'
 
 const ynab = useYnabStore()
+const isConfirmed = ref(false)
+
+// Reset confirmation when budget changes or is cleared
+watch(
+  () => ynab.selectedBudget,
+  () => {
+    isConfirmed.value = false
+  }
+)
 </script>
 
 <template>
@@ -28,18 +39,30 @@ const ynab = useYnabStore()
       Authorise with YNAB
     </a>
   </div>
-  <div v-else-if="ynab.selectedBudget" class="py-12 px-4 max-w-4xl mx-auto">
+  <div v-else-if="ynab.selectedBudget && isConfirmed" class="py-12 px-4 max-w-4xl mx-auto">
     <!-- Selected Budget View Placeholder -->
     <h2 class="text-3xl font-bold text-white mb-4">
       {{ ynab.selectedBudget.name }}
     </h2>
-    <p class="text-slate-400">Budget analysis dashboard coming soon...</p>
-    <button
-      v-on:click="ynab.clearSelectedBudget()"
-      class="mt-8 text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
-    >
-      &larr; Back to budgets
-    </button>
+    <p class="text-slate-400">
+      Portfolio analysis dashboard for
+      {{ ynab.selectedAccountIds.length }} accounts coming soon...
+    </p>
+    <div class="mt-8 flex space-x-4">
+      <button
+        v-on:click="isConfirmed = false"
+        class="text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+      >
+        &larr; Change accounts
+      </button>
+      <button
+        v-on:click="ynab.clearSelectedBudget()"
+        class="text-slate-400 hover:text-white font-medium transition-colors"
+      >
+        Back to budgets
+      </button>
+    </div>
   </div>
+  <AccountList v-else-if="ynab.selectedBudget" v-on:confirm="isConfirmed = true" />
   <BudgetList v-else />
 </template>

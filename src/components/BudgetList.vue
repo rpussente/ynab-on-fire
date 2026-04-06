@@ -42,7 +42,7 @@ const formatDate = (dateString?: string | null) => {
         v-for="budget in ynab.budgets"
         v-bind:id="budget.id"
         v-bind:key="budget.id"
-        v-on:click="ynab.selectedBudget = budget"
+        v-on:click="ynab.selectBudget(budget)"
         class="group relative overflow-hidden bg-slate-900/50 border border-slate-800 rounded-2xl p-6 cursor-pointer hover:border-indigo-500/50 hover:bg-slate-800/80 transition-all duration-300 backdrop-blur-xl shadow-2xl hover:shadow-indigo-500/10 active:scale-[0.98]"
       >
         <!-- Background Glow -->
