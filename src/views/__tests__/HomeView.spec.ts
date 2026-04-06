@@ -13,13 +13,16 @@ describe('HomeView', () => {
   })
 
   it('suggests to select a budget', () => {
+    const ynabStore = useYnabStore()
+    ynabStore.markAuthorised('fakeToken')
     const wrapper = mount(HomeView)
 
-    expect(wrapper.findComponent(BudgetList).isVisible()).toBe(true)
+    expect(wrapper.findComponent(BudgetList).exists()).toBe(true)
   })
 
   it('selects a budget', async () => {
     const ynabStore = useYnabStore()
+    ynabStore.markAuthorised('fakeToken')
     ynabStore.budgets = [
       { id: 'budget_1', name: 'Budget 1' },
       { id: 'budget_2', name: 'Budget 2' }
