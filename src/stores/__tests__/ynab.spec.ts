@@ -66,4 +66,16 @@ describe('ynab store', () => {
     expect(ynab.selectedBudget).toBeUndefined()
     expect(sessionStorage.getItem(YNAB_ACCESS_TOKEN)).toBe(null)
   })
+
+  it('selects a budget and clears it', async () => {
+    const ynab = useYnabStore()
+    const budget = { id: 'b1', name: 'Budget 1' }
+    ynab.selectBudget(budget as any)
+    expect(ynab.selectedBudget).toEqual(budget)
+
+    ynab.clearSelectedBudget()
+    expect(ynab.selectedBudget).toBeUndefined()
+    expect(ynab.accounts).toEqual([])
+    expect(ynab.selectedAccountIds).toEqual([])
+  })
 })
