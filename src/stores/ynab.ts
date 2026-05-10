@@ -30,6 +30,10 @@ export const useYnabStore = defineStore('ynab', () => {
 
   const selectedBudget = ref<ynab.BudgetSummary>()
 
+  const months = ref<ynab.MonthSummary[]>([])
+  const loadingMonths = ref(false)
+  const monthsError = ref<string | null>(null)
+
   const authUri = computed(
     () =>
       `https://app.ynab.com/oauth/authorize?client_id=${apiConfig.value.clientId}&redirect_uri=${apiConfig.value.redirectUri}&response_type=token`
@@ -48,12 +52,16 @@ export const useYnabStore = defineStore('ynab', () => {
     selectedBudget.value = undefined
     accounts.value = []
     selectedAccountIds.value = []
+    months.value = []
+    monthsError.value = null
   }
 
   function clearSelectedBudget() {
     selectedBudget.value = undefined
     accounts.value = []
     selectedAccountIds.value = []
+    months.value = []
+    monthsError.value = null
   }
 
   function selectBudget(budget: ynab.BudgetSummary) {
@@ -95,6 +103,20 @@ export const useYnabStore = defineStore('ynab', () => {
     }
   }
 
+  async function loadMonths(budgetId: string) {
+    if (api.value == null) return
+    loadingMonths.value = true
+    monthsError.value = null
+    try {
+      const response = await api.value.months.getBudgetMonths(budgetId)
+      months.value = response.data.months
+    } catch {
+      monthsError.value = 'Failed to load monthly data'
+    } finally {
+      loadingMonths.value = false
+    }
+  }
+
   if (isAuthorised.value) {
     api.value = new ynab.api(accessToken.value)
     loadBudgets()
@@ -115,6 +137,10 @@ export const useYnabStore = defineStore('ynab', () => {
     selectedAccountIds,
     loadingAccounts,
     accountsError,
-    loadAccounts
+    loadAccounts,
+    months,
+    loadingMonths,
+    monthsError,
+    loadMonths
   }
 })

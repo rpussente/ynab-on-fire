@@ -1,17 +1,10 @@
 <script setup lang="ts">
 import { useYnabStore } from '@/stores/ynab'
+import { useFormatCurrency } from '@/composables/useFormatCurrency'
 import { computed } from 'vue'
 
 const ynab = useYnabStore()
-
-const formatCurrency = (amount?: number) => {
-  if (amount === undefined) return '0.00'
-  const isoCode = ynab.selectedBudget?.currency_format?.iso_code || 'GBP'
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency: isoCode
-  }).format(amount / 1000)
-}
+const { formatCurrency } = useFormatCurrency()
 
 const activeAccounts = computed(() => {
   return ynab.accounts.filter((account) => !account.closed && !account.deleted)
@@ -91,7 +84,7 @@ const isSelected = (accountId: string) => {
                 class="text-lg font-mono font-medium"
                 v-bind:class="[isSelected(account.id) ? 'text-white' : 'text-slate-300']"
               >
-                {{ formatCurrency(account.balance) }}
+                {{ formatCurrency(account.balance / 1000) }}
               </p>
             </div>
           </div>
