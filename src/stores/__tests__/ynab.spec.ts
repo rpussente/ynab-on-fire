@@ -52,6 +52,8 @@ describe('ynab store', () => {
       name: 'Budget Name'
     }
     ynab.budgets = [ynab.selectedBudget]
+    ynab.months = [{ month: '2026-01-01' } as any]
+    ynab.monthsError = 'some error'
 
     // the token is written async
     await flushPromises()
@@ -64,6 +66,8 @@ describe('ynab store', () => {
     expect(ynab.isAuthorised).toBe(false)
     expect(ynab.budgets).toStrictEqual([])
     expect(ynab.selectedBudget).toBeUndefined()
+    expect(ynab.months).toStrictEqual([])
+    expect(ynab.monthsError).toBeNull()
     expect(sessionStorage.getItem(YNAB_ACCESS_TOKEN)).toBe(null)
   })
 
@@ -71,11 +75,25 @@ describe('ynab store', () => {
     const ynab = useYnabStore()
     const budget = { id: 'b1', name: 'Budget 1' }
     ynab.selectBudget(budget as any)
+    ynab.months = [{ month: '2026-01-01' } as any]
+    ynab.monthsError = 'some error'
     expect(ynab.selectedBudget).toEqual(budget)
 
     ynab.clearSelectedBudget()
     expect(ynab.selectedBudget).toBeUndefined()
     expect(ynab.accounts).toEqual([])
     expect(ynab.selectedAccountIds).toEqual([])
+    expect(ynab.months).toEqual([])
+    expect(ynab.monthsError).toBeNull()
+  })
+
+  it('loadMonths does nothing when api is not initialised', async () => {
+    const ynab = useYnabStore()
+    ynab.months = [{ month: '2026-01-01' } as any]
+    await ynab.loadMonths('budget_id')
+    // api is null, so months and loading state must be unchanged
+    expect(ynab.months).toHaveLength(1)
+    expect(ynab.loadingMonths).toBe(false)
+    expect(ynab.monthsError).toBeNull()
   })
 })
