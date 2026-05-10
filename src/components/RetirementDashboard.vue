@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useYnabStore } from '@/stores/ynab'
+import { useFormatCurrency } from '@/composables/useFormatCurrency'
 
 const emit = defineEmits<{ 'change-accounts': [] }>()
 
 const ynab = useYnabStore()
+const { formatCurrency } = useFormatCurrency()
 const withdrawalRate = ref(4)
 const rates = [3.5, 4, 4.5, 5]
 
@@ -13,11 +15,6 @@ onMounted(() => {
     ynab.loadMonths(ynab.selectedBudget.id)
   }
 })
-
-const formatCurrency = (amount: number) => {
-  const isoCode = ynab.selectedBudget?.currency_format?.iso_code ?? 'GBP'
-  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: isoCode }).format(amount)
-}
 
 const portfolioValue = computed(
   () =>
