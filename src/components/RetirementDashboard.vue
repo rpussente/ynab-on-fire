@@ -30,7 +30,7 @@ const last12Months = computed(() => {
   const now = new Date()
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
   return ynab.months
-    .filter((m) => m.month < currentMonth)
+    .filter((m) => m.month < currentMonth && !m.deleted)
     .sort((a, b) => b.month.localeCompare(a.month))
     .slice(0, 12)
 })
