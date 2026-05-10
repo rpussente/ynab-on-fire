@@ -17,7 +17,7 @@ describe('RetirementDashboard', () => {
       budgeted: income,
       activity: -income,
       to_be_budgeted: 0,
-      deleted,
+      deleted
     }
   }
 
@@ -27,11 +27,11 @@ describe('RetirementDashboard', () => {
     ynab.selectedBudget = {
       id: 'b1',
       name: 'Test Budget',
-      currency_format: { iso_code: 'GBP' },
+      currency_format: { iso_code: 'GBP' }
     } as any
     ynab.accounts = [
       { id: 'acc1', balance: 10_000_000, closed: false, deleted: false } as any,
-      { id: 'acc2', balance: 20_000_000, closed: false, deleted: false } as any,
+      { id: 'acc2', balance: 20_000_000, closed: false, deleted: false } as any
     ]
     ynab.selectedAccountIds = ['acc1', 'acc2']
     // 12 months at £2,000/month income (2,000,000 milliunits each)
@@ -89,7 +89,7 @@ describe('RetirementDashboard', () => {
   it('excludes deleted months from income average', () => {
     ynab.months = [
       makeMonth(1, 3_000_000), // £3,000 — valid
-      makeMonth(2, 9_000_000, true), // deleted — must not affect average
+      makeMonth(2, 9_000_000, true) // deleted — must not affect average
     ] as any
     const wrapper = mount(RetirementDashboard)
     // avg = £3,000 monthly → annual £36,000 (not £72,000 if deleted were included)
