@@ -8,3 +8,7 @@ check: node_modules
 
 dev: node_modules
 	npm run dev -- --open
+
+install-hooks:
+	git config core.hooksPath .githooks
+	chmod +x .githooks/pre-commit
