@@ -3,19 +3,26 @@ import { ref, watch } from 'vue'
 import { useYnabStore } from '@/stores/ynab'
 import BudgetList from '@/components/BudgetList.vue'
 import AccountList from '@/components/AccountList.vue'
+import CategoryList from '@/components/CategoryList.vue'
 import RetirementDashboard from '@/components/RetirementDashboard.vue'
 import LockIcon from '@/components/icons/LockIcon.vue'
 
 const ynab = useYnabStore()
-const isConfirmed = ref(false)
+const isAccountsConfirmed = ref(false)
+const isCategoriesConfirmed = ref(false)
 
-// Reset confirmation when budget changes or is cleared
 watch(
   () => ynab.selectedBudget,
   () => {
-    isConfirmed.value = false
+    isAccountsConfirmed.value = false
+    isCategoriesConfirmed.value = false
   }
 )
+
+function resetToAccounts() {
+  isAccountsConfirmed.value = false
+  isCategoriesConfirmed.value = false
+}
 </script>
 
 <template>
@@ -41,9 +48,15 @@ watch(
     </a>
   </div>
   <RetirementDashboard
-    v-else-if="ynab.selectedBudget && isConfirmed"
-    @change-accounts="isConfirmed = false"
+    v-else-if="ynab.selectedBudget && isAccountsConfirmed && isCategoriesConfirmed"
+    @change-categories="isCategoriesConfirmed = false"
+    @change-accounts="resetToAccounts"
   />
-  <AccountList v-else-if="ynab.selectedBudget" v-on:confirm="isConfirmed = true" />
+  <CategoryList
+    v-else-if="ynab.selectedBudget && isAccountsConfirmed"
+    @confirm="isCategoriesConfirmed = true"
+    @back="isAccountsConfirmed = false"
+  />
+  <AccountList v-else-if="ynab.selectedBudget" @confirm="isAccountsConfirmed = true" />
   <BudgetList v-else />
 </template>

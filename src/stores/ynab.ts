@@ -34,6 +34,11 @@ export const useYnabStore = defineStore('ynab', () => {
   const loadingMonths = ref(false)
   const monthsError = ref<string | null>(null)
 
+  const categoryGroups = ref<ynab.CategoryGroupWithCategories[]>([])
+  const selectedCategoryIds = ref<string[]>([])
+  const loadingCategories = ref(false)
+  const categoriesError = ref<string | null>(null)
+
   const authUri = computed(
     () =>
       `https://app.ynab.com/oauth/authorize?client_id=${apiConfig.value.clientId}&redirect_uri=${apiConfig.value.redirectUri}&response_type=token`
@@ -54,6 +59,9 @@ export const useYnabStore = defineStore('ynab', () => {
     selectedAccountIds.value = []
     months.value = []
     monthsError.value = null
+    categoryGroups.value = []
+    selectedCategoryIds.value = []
+    categoriesError.value = null
   }
 
   function clearSelectedBudget() {
@@ -62,6 +70,9 @@ export const useYnabStore = defineStore('ynab', () => {
     selectedAccountIds.value = []
     months.value = []
     monthsError.value = null
+    categoryGroups.value = []
+    selectedCategoryIds.value = []
+    categoriesError.value = null
   }
 
   function selectBudget(budget: ynab.BudgetSummary) {
@@ -103,6 +114,20 @@ export const useYnabStore = defineStore('ynab', () => {
     }
   }
 
+  async function loadCategories(budgetId: string) {
+    if (api.value == null) return
+    loadingCategories.value = true
+    categoriesError.value = null
+    try {
+      const res = await api.value.categories.getCategories(budgetId)
+      categoryGroups.value = res.data.category_groups
+    } catch {
+      categoriesError.value = 'Failed to load categories'
+    } finally {
+      loadingCategories.value = false
+    }
+  }
+
   async function loadMonths(budgetId: string) {
     if (api.value == null) return
     loadingMonths.value = true
@@ -141,6 +166,11 @@ export const useYnabStore = defineStore('ynab', () => {
     months,
     loadingMonths,
     monthsError,
-    loadMonths
+    loadMonths,
+    categoryGroups,
+    selectedCategoryIds,
+    loadingCategories,
+    categoriesError,
+    loadCategories
   }
 })

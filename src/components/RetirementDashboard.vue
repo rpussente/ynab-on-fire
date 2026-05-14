@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useYnabStore } from '@/stores/ynab'
 import { useFormatCurrency } from '@/composables/useFormatCurrency'
 
-const emit = defineEmits<{ 'change-accounts': [] }>()
+const emit = defineEmits<{ 'change-accounts': []; 'change-categories': [] }>()
 
 const ynab = useYnabStore()
 const { formatCurrency } = useFormatCurrency()
@@ -37,7 +37,16 @@ const avgMonthlyIncome = computed(() => {
   return last12Months.value.reduce((sum, m) => sum + m.income, 0) / last12Months.value.length / 1000
 })
 
-const annualIncomeNeeded = computed(() => avgMonthlyIncome.value * 12)
+const selectedCategoriesMonthly = computed(() => {
+  if (ynab.selectedCategoryIds.length === 0) return null
+  const allCategories = ynab.categoryGroups.flatMap((g) => g.categories)
+  const selected = allCategories.filter((c) => ynab.selectedCategoryIds.includes(c.id))
+  return selected.reduce((sum, c) => sum + c.budgeted, 0) / 1000
+})
+
+const monthlyNeeded = computed(() => selectedCategoriesMonthly.value ?? avgMonthlyIncome.value)
+
+const annualIncomeNeeded = computed(() => monthlyNeeded.value * 12)
 
 const retirementTarget = computed(() => {
   if (withdrawalRate.value === 0 || annualIncomeNeeded.value === 0) return 0
@@ -70,6 +79,12 @@ const hasNoData = computed(
         <h2 class="text-3xl font-bold text-white">{{ ynab.selectedBudget?.name }}</h2>
       </div>
       <div class="flex gap-4 mt-2">
+        <button
+          @click="emit('change-categories')"
+          class="text-indigo-400 hover:text-indigo-300 font-medium transition-colors text-sm"
+        >
+          &larr; Change categories
+        </button>
         <button
           @click="emit('change-accounts')"
           class="text-indigo-400 hover:text-indigo-300 font-medium transition-colors text-sm"
@@ -106,12 +121,16 @@ const hasNoData = computed(
     <div v-else class="space-y-6">
       <div>
         <h3 class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3">
-          Income Needed in Retirement
+          {{
+            selectedCategoriesMonthly !== null
+              ? 'Monthly Retirement Budget'
+              : 'Income Needed in Retirement'
+          }}
         </h3>
         <div class="grid grid-cols-2 gap-4">
           <div class="bg-slate-800 rounded-xl p-6">
             <p class="text-slate-400 text-sm mb-1">Monthly</p>
-            <p class="text-2xl font-bold text-white">{{ formatCurrency(avgMonthlyIncome) }}</p>
+            <p class="text-2xl font-bold text-white">{{ formatCurrency(monthlyNeeded) }}</p>
           </div>
           <div class="bg-slate-800 rounded-xl p-6">
             <p class="text-slate-400 text-sm mb-1">Annual</p>
@@ -193,7 +212,13 @@ const hasNoData = computed(
       </div>
 
       <p class="text-slate-500 text-xs text-center">
-        Based on average monthly income over {{ last12Months.length }} months of YNAB data
+        <template v-if="selectedCategoriesMonthly !== null">
+          Based on {{ ynab.selectedCategoryIds.length }} selected
+          {{ ynab.selectedCategoryIds.length === 1 ? 'category' : 'categories' }}
+        </template>
+        <template v-else>
+          Based on average monthly income over {{ last12Months.length }} months of YNAB data
+        </template>
       </p>
     </div>
   </div>
