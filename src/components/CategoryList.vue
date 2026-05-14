@@ -34,6 +34,29 @@ const toggleCategory = (categoryId: string) => {
 }
 
 const isSelected = (categoryId: string) => ynab.selectedCategoryIds.includes(categoryId)
+
+const isGroupFullySelected = (groupId: string) => {
+  const group = activeGroups.value.find((g) => g.id === groupId)
+  if (!group) return false
+  return group.categories.every((c) => ynab.selectedCategoryIds.includes(c.id))
+}
+
+const toggleGroup = (groupId: string) => {
+  const group = activeGroups.value.find((g) => g.id === groupId)
+  if (!group) return
+  if (isGroupFullySelected(groupId)) {
+    group.categories.forEach((c) => {
+      const index = ynab.selectedCategoryIds.indexOf(c.id)
+      if (index !== -1) ynab.selectedCategoryIds.splice(index, 1)
+    })
+  } else {
+    group.categories.forEach((c) => {
+      if (!ynab.selectedCategoryIds.includes(c.id)) {
+        ynab.selectedCategoryIds.push(c.id)
+      }
+    })
+  }
+}
 </script>
 
 <template>
@@ -67,9 +90,17 @@ const isSelected = (categoryId: string) => ynab.selectedCategoryIds.includes(cat
     <template v-else>
       <div class="w-full max-w-4xl mb-12 space-y-8">
         <div v-for="group in activeGroups" :key="group.id">
-          <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-3">
-            {{ group.name }}
-          </p>
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">
+              {{ group.name }}
+            </p>
+            <button
+              @click="toggleGroup(group.id)"
+              class="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+            >
+              {{ isGroupFullySelected(group.id) ? 'Deselect all' : 'Select all' }}
+            </button>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div
               v-for="category in group.categories"
