@@ -18,6 +18,11 @@ watch(
     isCategoriesConfirmed.value = false
   }
 )
+
+function resetToAccounts() {
+  isAccountsConfirmed.value = false
+  isCategoriesConfirmed.value = false
+}
 </script>
 
 <template>
@@ -45,10 +50,7 @@ watch(
   <RetirementDashboard
     v-else-if="ynab.selectedBudget && isAccountsConfirmed && isCategoriesConfirmed"
     @change-categories="isCategoriesConfirmed = false"
-    @change-accounts="
-      isAccountsConfirmed = false
-      isCategoriesConfirmed = false
-    "
+    @change-accounts="resetToAccounts"
   />
   <CategoryList
     v-else-if="ynab.selectedBudget && isAccountsConfirmed"
