@@ -6,6 +6,8 @@ const route = useRoute()
 const router = useRouter()
 const ynab = useYnabStore()
 
+const isDev = import.meta.env.DEV
+
 const ynabToken = findYnabToken()
 
 if (ynabToken != null) {
@@ -37,6 +39,12 @@ function findYnabToken() {
         >
           YNAB on Fire
         </RouterLink>
+        <span
+          v-if="isDev"
+          class="px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 tracking-wide"
+        >
+          DEV
+        </span>
       </div>
 
       <div class="flex items-center space-x-6">
