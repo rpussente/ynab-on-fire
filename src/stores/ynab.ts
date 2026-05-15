@@ -1,10 +1,12 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { useSessionStorage } from '@vueuse/core'
+import { useLocalStorage, useSessionStorage } from '@vueuse/core'
 import * as ynab from 'ynab'
 import jsonConfig from '../ynab.config.json'
 
 export const YNAB_ACCESS_TOKEN = 'YNAB_ACCESS_TOKEN'
+const SELECTED_ACCOUNT_IDS_KEY = 'ynab-on-fire:selected-account-ids'
+const SELECTED_CATEGORY_IDS_KEY = 'ynab-on-fire:selected-category-ids'
 
 export interface Ynab {
   clientId: string
@@ -24,7 +26,7 @@ export const useYnabStore = defineStore('ynab', () => {
 
   const budgets = ref<ynab.BudgetSummary[]>([])
   const accounts = ref<ynab.Account[]>([])
-  const selectedAccountIds = ref<string[]>([])
+  const selectedAccountIds = useLocalStorage<string[]>(SELECTED_ACCOUNT_IDS_KEY, [])
   const loadingAccounts = ref(false)
   const accountsError = ref()
 
@@ -35,7 +37,7 @@ export const useYnabStore = defineStore('ynab', () => {
   const monthsError = ref<string | null>(null)
 
   const categoryGroups = ref<ynab.CategoryGroupWithCategories[]>([])
-  const selectedCategoryIds = ref<string[]>([])
+  const selectedCategoryIds = useLocalStorage<string[]>(SELECTED_CATEGORY_IDS_KEY, [])
   const loadingCategories = ref(false)
   const categoriesError = ref<string | null>(null)
 
