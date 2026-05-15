@@ -1,0 +1,14 @@
+#!/bin/sh
+# Block commits directly on main
+branch="$(git symbolic-ref --short HEAD)"
+if [ "$branch" = "main" ]; then
+  echo "error: direct commits to 'main' are not allowed. Create a feature branch first."
+  exit 1
+fi
+
+# Run prettier on staged files
+staged=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|vue|js|json|css|md)$')
+if [ -n "$staged" ]; then
+  echo "$staged" | xargs npx prettier --write
+  echo "$staged" | xargs git add
+fi
