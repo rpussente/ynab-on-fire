@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useYnabStore } from '@/stores/ynab'
 import { useFormatCurrency } from '@/composables/useFormatCurrency'
 import FireProgressChart from '@/components/FireProgressChart.vue'
+import DebtPayoffChart from '@/components/DebtPayoffChart.vue'
 
 const emit = defineEmits<{ 'change-accounts': []; 'change-categories': [] }>()
 
@@ -109,6 +110,100 @@ const yearsAwayLabel = computed(() => {
 
 const chartYears = computed(() =>
   yearsToFire.value === null ? 40 : Math.min(yearsToFire.value + 2, 40)
+)
+
+function getMostRecentValue(map: Record<string, number> | null | undefined): number {
+  if (!map) return 0
+  const entries = Object.entries(map).sort((a, b) => b[0].localeCompare(a[0]))
+  return entries.length > 0 ? entries[0][1] : 0
+}
+
+const DEBT_ACCOUNT_TYPES = [
+  'creditCard',
+  'lineOfCredit',
+  'mortgage',
+  'autoLoan',
+  'studentLoan',
+  'personalLoan',
+  'medicalDebt',
+  'otherDebt'
+]
+
+const debtAccounts = computed(() =>
+  ynab.accounts.filter(
+    (a) => !a.closed && !a.deleted && a.balance < 0 && DEBT_ACCOUNT_TYPES.includes(a.type)
+  )
+)
+
+const totalDebt = computed(() => debtAccounts.value.reduce((sum, a) => sum - a.balance, 0) / 1000)
+
+const totalMonthlyDebtPayment = computed(
+  () =>
+    debtAccounts.value.reduce((sum, a) => sum + getMostRecentValue(a.debt_minimum_payments), 0) /
+    1000
+)
+
+const hasDebtPaymentData = computed(() => totalMonthlyDebtPayment.value > 0)
+
+const debtProjectionPoints = computed(() => {
+  if (debtAccounts.value.length === 0 || !hasDebtPaymentData.value) return []
+
+  const debts = debtAccounts.value.map((a) => ({
+    balance: -a.balance / 1000,
+    monthlyRate: getMostRecentValue(a.debt_interest_rates) / 1000 / 100 / 12,
+    monthlyPayment: getMostRecentValue(a.debt_minimum_payments) / 1000
+  }))
+
+  const points: { monthIndex: number; balance: number }[] = [
+    { monthIndex: 0, balance: totalDebt.value }
+  ]
+  const MAX_MONTHS = 600
+
+  for (let i = 1; i <= MAX_MONTHS; i++) {
+    for (const debt of debts) {
+      if (debt.balance > 0) {
+        debt.balance = Math.max(0, debt.balance * (1 + debt.monthlyRate) - debt.monthlyPayment)
+      }
+    }
+    const total = debts.reduce((sum, d) => sum + d.balance, 0)
+    points.push({ monthIndex: i, balance: total })
+    if (total <= 0.01) break
+  }
+
+  return points
+})
+
+const monthsToPayoff = computed(() => {
+  if (debtProjectionPoints.value.length < 2) return null
+  const last = debtProjectionPoints.value[debtProjectionPoints.value.length - 1]
+  return last.balance <= 0.01 ? last.monthIndex : null
+})
+
+const estimatedPayoffDate = computed(() => {
+  if (monthsToPayoff.value === null) return null
+  const d = new Date()
+  d.setDate(1)
+  d.setMonth(d.getMonth() + monthsToPayoff.value)
+  return d
+})
+
+const formattedPayoffDate = computed(() => {
+  if (!estimatedPayoffDate.value) return '—'
+  return estimatedPayoffDate.value.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+})
+
+const yearsToPayoff = computed(() =>
+  monthsToPayoff.value === null ? null : monthsToPayoff.value / 12
+)
+
+const yearsToPayoffLabel = computed(() => {
+  if (yearsToPayoff.value === null) return ''
+  const y = Math.ceil(yearsToPayoff.value)
+  return `~${y} ${y === 1 ? 'year' : 'years'} away`
+})
+
+const debtChartYears = computed(() =>
+  yearsToPayoff.value === null ? 10 : Math.min(yearsToPayoff.value + 1, 50)
 )
 
 const projectionPoints = computed(() => {
@@ -300,6 +395,52 @@ const projectionPoints = computed(() => {
         <p class="text-slate-500 text-sm mt-2">
           Recent spending exceeds income — no FIRE projection available.
         </p>
+      </div>
+
+      <div v-if="debtAccounts.length > 0">
+        <h3 class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3">
+          Debt Payoff
+        </h3>
+
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="bg-slate-800 rounded-xl p-6">
+            <p class="text-slate-400 text-sm mb-1">
+              Total Debt ({{ debtAccounts.length }}
+              {{ debtAccounts.length === 1 ? 'account' : 'accounts' }})
+            </p>
+            <p class="text-2xl font-bold text-white">{{ formatCurrency(totalDebt) }}</p>
+          </div>
+          <div class="bg-slate-800 rounded-xl p-6">
+            <p class="text-slate-400 text-sm mb-1">Monthly Payments</p>
+            <p class="text-2xl font-bold text-white">
+              {{ hasDebtPaymentData ? formatCurrency(totalMonthlyDebtPayment) : '—' }}
+            </p>
+          </div>
+        </div>
+
+        <template v-if="hasDebtPaymentData">
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="bg-slate-800 rounded-xl p-6">
+              <p class="text-slate-400 text-sm mb-1">Estimated Payoff</p>
+              <p class="text-2xl font-bold text-white">{{ formattedPayoffDate }}</p>
+              <p class="text-slate-400 text-sm mt-1">{{ yearsToPayoffLabel }}</p>
+            </div>
+          </div>
+          <div class="bg-slate-800 rounded-xl p-6">
+            <DebtPayoffChart
+              :points="debtProjectionPoints"
+              :total-months="Math.ceil(debtChartYears * 12)"
+              :payoff-month-index="monthsToPayoff"
+              :max-balance="totalDebt"
+            />
+          </div>
+        </template>
+
+        <div v-else class="bg-slate-800 rounded-xl p-6">
+          <p class="text-slate-400 text-sm">
+            Add minimum payment amounts to your debt accounts in YNAB to see a payoff projection.
+          </p>
+        </div>
       </div>
 
       <p class="text-slate-500 text-xs text-center">
