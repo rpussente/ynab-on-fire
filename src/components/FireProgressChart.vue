@@ -6,6 +6,7 @@ const props = defineProps<{
   totalMonths: number
   fireMonthIndex: number | null
   currentProgress: number
+  historyMonths: number
 }>()
 
 const LEFT = 48
@@ -35,26 +36,39 @@ const baseYear = new Date().getFullYear()
 const xAxisLabels = computed(() => {
   const labels: { x: number; label: string }[] = []
   for (let m = 0; m <= props.totalMonths; m += yearStepMonths.value) {
-    labels.push({ x: xFor(m), label: String(baseYear + Math.round(m / 12)) })
+    labels.push({
+      x: xFor(m),
+      label: String(baseYear + Math.round((m - props.historyMonths) / 12))
+    })
   }
   return labels
 })
 
 const gridLines = [0, 25, 50, 75, 100]
 
-const linePoints = computed(() =>
-  props.points.map(({ monthIndex, progress }) => `${xFor(monthIndex)},${yFor(progress)}`).join(' ')
+const histLinePoints = computed(() =>
+  props.points
+    .filter((p) => p.monthIndex <= props.historyMonths)
+    .map(({ monthIndex, progress }) => `${xFor(monthIndex)},${yFor(progress)}`)
+    .join(' ')
 )
 
-const areaPoints = computed(() => {
-  if (props.points.length === 0) return ''
-  const last = props.points[props.points.length - 1]
-  const pathPoints = [
-    `${xFor(0)},${BOTTOM}`,
-    ...props.points.map(({ monthIndex, progress }) => `${xFor(monthIndex)},${yFor(progress)}`),
+const projLinePoints = computed(() =>
+  props.points
+    .filter((p) => p.monthIndex >= props.historyMonths)
+    .map(({ monthIndex, progress }) => `${xFor(monthIndex)},${yFor(progress)}`)
+    .join(' ')
+)
+
+const projAreaPoints = computed(() => {
+  const pts = props.points.filter((p) => p.monthIndex >= props.historyMonths)
+  if (pts.length === 0) return ''
+  const last = pts[pts.length - 1]
+  return [
+    `${xFor(pts[0].monthIndex)},${BOTTOM}`,
+    ...pts.map(({ monthIndex, progress }) => `${xFor(monthIndex)},${yFor(progress)}`),
     `${xFor(last.monthIndex)},${BOTTOM}`
-  ]
-  return pathPoints.join(' ')
+  ].join(' ')
 })
 </script>
 
@@ -106,19 +120,47 @@ const areaPoints = computed(() => {
     />
     <text :x="RIGHT + 4" :y="yFor(100) + 4" fill="#6366f1" font-size="10">FIRE</text>
 
-    <!-- Filled area under the line -->
-    <polygon v-if="points.length > 0" :points="areaPoints" fill="url(#fire-fill)" />
+    <!-- Filled area under projection -->
+    <polygon v-if="projAreaPoints" :points="projAreaPoints" fill="url(#fire-fill)" />
+
+    <!-- Historical line -->
+    <polyline
+      v-if="histLinePoints"
+      :points="histLinePoints"
+      fill="none"
+      stroke="#475569"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      opacity="0.8"
+    />
 
     <!-- Projection line -->
     <polyline
-      v-if="points.length > 0"
-      :points="linePoints"
+      v-if="projLinePoints"
+      :points="projLinePoints"
       fill="none"
       stroke="url(#fire-line)"
       stroke-width="2.5"
       stroke-linecap="round"
       stroke-linejoin="round"
     />
+
+    <!-- Today marker -->
+    <g v-if="historyMonths > 0">
+      <line
+        :x1="xFor(historyMonths)"
+        :x2="xFor(historyMonths)"
+        :y1="TOP"
+        :y2="BOTTOM"
+        stroke="#64748b"
+        stroke-width="1"
+        stroke-dasharray="3 3"
+      />
+      <text :x="xFor(historyMonths)" y="276" fill="#64748b" font-size="9" text-anchor="middle">
+        Today
+      </text>
+    </g>
 
     <!-- Estimated FIRE date vertical marker -->
     <g v-if="fireMonthIndex !== null && fireMonthIndex <= totalMonths">
@@ -143,7 +185,7 @@ const areaPoints = computed(() => {
 
     <!-- Today's dot -->
     <circle
-      :cx="xFor(0)"
+      :cx="xFor(historyMonths)"
       :cy="yFor(currentProgress)"
       r="4"
       fill="#6366f1"
