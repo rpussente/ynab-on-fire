@@ -7,7 +7,7 @@ import RetirementDashboard from '../RetirementDashboard.vue'
 describe('RetirementDashboard', () => {
   let ynab: ReturnType<typeof useYnabStore>
 
-  const makeMonth = (monthsAgo: number, income: number, deleted = false) => {
+  const makeMonth = (monthsAgo: number, income: number, deleted = false, activity = -income) => {
     const d = new Date()
     d.setDate(1)
     d.setMonth(d.getMonth() - monthsAgo)
@@ -15,7 +15,7 @@ describe('RetirementDashboard', () => {
       month: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`,
       income,
       budgeted: income,
-      activity: -income,
+      activity,
       to_be_budgeted: 0,
       deleted
     }
@@ -113,5 +113,68 @@ describe('RetirementDashboard', () => {
     const changeBtn = wrapper.findAll('button').find((b) => b.text().includes('Change accounts'))
     await changeBtn!.trigger('click')
     expect(wrapper.emitted('change-accounts')).toBeTruthy()
+  })
+
+  describe('FIRE projection', () => {
+    it('shows avg monthly savings when net savings are positive', () => {
+      // income £2,000, spending £1,500 → net £500/month
+      ynab.months = Array.from({ length: 12 }, (_, i) =>
+        makeMonth(i + 1, 2_000_000, false, -1_500_000)
+      ) as any
+      const wrapper = mount(RetirementDashboard)
+      expect(wrapper.text()).toContain('£500')
+    })
+
+    it('shows estimated FIRE date as a year', () => {
+      ynab.months = Array.from({ length: 12 }, (_, i) =>
+        makeMonth(i + 1, 2_000_000, false, -1_500_000)
+      ) as any
+      const wrapper = mount(RetirementDashboard)
+      expect(wrapper.text()).toMatch(/20\d\d/)
+    })
+
+    it('shows "years away" label', () => {
+      ynab.months = Array.from({ length: 12 }, (_, i) =>
+        makeMonth(i + 1, 2_000_000, false, -1_500_000)
+      ) as any
+      const wrapper = mount(RetirementDashboard)
+      expect(wrapper.text()).toContain('years away')
+    })
+
+    it('shows warning when net savings are zero or negative', () => {
+      // spending equals income → net £0
+      ynab.months = Array.from({ length: 12 }, (_, i) => makeMonth(i + 1, 2_000_000)) as any
+      const wrapper = mount(RetirementDashboard)
+      expect(wrapper.text()).toContain('spending exceeds income')
+    })
+
+    it('shows warning when spending exceeds income', () => {
+      // spending more than income → net -£1,000
+      ynab.months = Array.from({ length: 12 }, (_, i) =>
+        makeMonth(i + 1, 2_000_000, false, -3_000_000)
+      ) as any
+      const wrapper = mount(RetirementDashboard)
+      expect(wrapper.text()).toContain('spending exceeds income')
+    })
+
+    it('hides projection when already at FIRE', () => {
+      // portfolio of £600,000 meets the £600k target at 4%
+      ynab.accounts = [{ id: 'acc1', balance: 600_000_000, closed: false, deleted: false }] as any
+      ynab.selectedAccountIds = ['acc1']
+      ynab.months = Array.from({ length: 12 }, (_, i) =>
+        makeMonth(i + 1, 2_000_000, false, -1_500_000)
+      ) as any
+      const wrapper = mount(RetirementDashboard)
+      expect(wrapper.text()).not.toContain('FIRE Projection')
+      expect(wrapper.text()).not.toContain('spending exceeds income')
+    })
+
+    it('shows FIRE projection heading when savings are positive', () => {
+      ynab.months = Array.from({ length: 12 }, (_, i) =>
+        makeMonth(i + 1, 2_000_000, false, -1_000_000)
+      ) as any
+      const wrapper = mount(RetirementDashboard)
+      expect(wrapper.text()).toContain('FIRE Projection')
+    })
   })
 })
