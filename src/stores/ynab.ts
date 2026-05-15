@@ -17,7 +17,7 @@ export const useYnabStore = defineStore('ynab', () => {
   const api = ref<ynab.api | null>(null)
   const apiConfig = ref<Ynab>({
     clientId: jsonConfig.clientId,
-    redirectUri: jsonConfig.redirectUri
+    redirectUri: import.meta.env.VITE_REDIRECT_URI ?? jsonConfig.redirectUri
   })
   const accessToken = useSessionStorage<string>(YNAB_ACCESS_TOKEN, null)
 
