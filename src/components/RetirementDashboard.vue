@@ -33,6 +33,14 @@ const last12Months = computed(() => {
     .slice(0, 12)
 })
 
+const completedMonths = computed(() => {
+  const now = new Date()
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+  return ynab.months
+    .filter((m) => m.month < currentMonth && !m.deleted)
+    .sort((a, b) => a.month.localeCompare(b.month))
+})
+
 const avgMonthlyIncome = computed(() => {
   if (last12Months.value.length === 0) return 0
   return last12Months.value.reduce((sum, m) => sum + m.income, 0) / last12Months.value.length / 1000
@@ -111,17 +119,44 @@ const chartYears = computed(() =>
   yearsToFire.value === null ? 40 : Math.min(yearsToFire.value + 2, 40)
 )
 
+const historicalPoints = computed(() => {
+  if (retirementTarget.value === 0 || completedMonths.value.length === 0) return []
+  const months = completedMonths.value
+  const n = months.length
+  const portfolioAtEnd = new Array<number>(n)
+  portfolioAtEnd[n - 1] = portfolioValue.value
+  for (let i = n - 2; i >= 0; i--) {
+    const nextNet = (months[i + 1].income + months[i + 1].activity) / 1000
+    portfolioAtEnd[i] = portfolioAtEnd[i + 1] - nextNet
+  }
+  return portfolioAtEnd.map((pv, i) => ({
+    monthIndex: i,
+    progress: Math.min(100, Math.max(0, (pv / retirementTarget.value) * 100))
+  }))
+})
+
+const historyMonths = computed(() => completedMonths.value.length)
+
 const projectionPoints = computed(() => {
   if (retirementTarget.value === 0) return []
+  const offset = historyMonths.value
   const totalMonths = Math.ceil(chartYears.value * 12)
   const points = []
   for (let i = 0; i <= totalMonths; i++) {
     const value = portfolioValue.value + avgMonthlySavings.value * i
     const progress = Math.min(100, (value / retirementTarget.value) * 100)
-    points.push({ monthIndex: i, progress })
+    points.push({ monthIndex: offset + i, progress })
   }
   return points
 })
+
+const allChartPoints = computed(() => [...historicalPoints.value, ...projectionPoints.value])
+
+const chartTotalMonths = computed(() => historyMonths.value + Math.ceil(chartYears.value * 12))
+
+const chartFireMonthIndex = computed(() =>
+  monthsToFire.value !== null ? historyMonths.value + Math.ceil(monthsToFire.value) : null
+)
 </script>
 
 <template>
@@ -283,10 +318,11 @@ const projectionPoints = computed(() => {
         </div>
         <div class="bg-slate-800 rounded-xl p-6">
           <FireProgressChart
-            :points="projectionPoints"
-            :total-months="Math.ceil(chartYears * 12)"
-            :fire-month-index="monthsToFire !== null ? Math.ceil(monthsToFire) : null"
+            :points="allChartPoints"
+            :total-months="chartTotalMonths"
+            :fire-month-index="chartFireMonthIndex"
             :current-progress="fireProgress"
+            :history-months="historyMonths"
           />
         </div>
       </div>
