@@ -8,14 +8,14 @@ import RetirementDashboard from '@/components/RetirementDashboard.vue'
 import LockIcon from '@/components/icons/LockIcon.vue'
 
 const ynab = useYnabStore()
-const isAccountsConfirmed = ref(false)
-const isCategoriesConfirmed = ref(false)
+const isAccountsConfirmed = ref(ynab.selectedAccountIds.length > 0)
+const isCategoriesConfirmed = ref(ynab.selectedCategoryIds.length > 0)
 
 watch(
   () => ynab.selectedBudget,
   () => {
-    isAccountsConfirmed.value = false
-    isCategoriesConfirmed.value = false
+    isAccountsConfirmed.value = ynab.selectedAccountIds.length > 0
+    isCategoriesConfirmed.value = ynab.selectedCategoryIds.length > 0
   }
 )
 
