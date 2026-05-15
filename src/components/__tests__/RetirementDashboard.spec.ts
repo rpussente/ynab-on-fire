@@ -176,5 +176,24 @@ describe('RetirementDashboard', () => {
       const wrapper = mount(RetirementDashboard)
       expect(wrapper.text()).toContain('FIRE Projection')
     })
+
+    it('computes monthly savings from selected categories when set', () => {
+      // avg income £2,000/month; selected categories budget £1,200/month → savings £800
+      ynab.months = Array.from({ length: 12 }, (_, i) =>
+        makeMonth(i + 1, 2_000_000, false, -2_000_000)
+      ) as any
+      ynab.categoryGroups = [
+        {
+          id: 'g1',
+          name: 'Living',
+          categories: [{ id: 'c1', budgeted: 1_200_000 } as any]
+        }
+      ] as any
+      ynab.selectedCategoryIds = ['c1']
+      const wrapper = mount(RetirementDashboard)
+      // savings = £2,000 income - £1,200 selected categories = £800
+      expect(wrapper.text()).toContain('£800')
+      expect(wrapper.text()).toContain('FIRE Projection')
+    })
   })
 })

@@ -71,6 +71,9 @@ const hasNoData = computed(
 
 const avgMonthlySavings = computed(() => {
   if (last12Months.value.length === 0) return 0
+  if (selectedCategoriesMonthly.value !== null) {
+    return avgMonthlyIncome.value - selectedCategoriesMonthly.value
+  }
   return (
     last12Months.value.reduce((sum, m) => sum + m.income + m.activity, 0) /
     last12Months.value.length /
