@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useYnabStore } from '@/stores/ynab'
 import { useFormatCurrency } from '@/composables/useFormatCurrency'
+import FireProgressChart from '@/components/FireProgressChart.vue'
 
 const emit = defineEmits<{ 'change-accounts': []; 'change-categories': [] }>()
 
@@ -67,6 +68,60 @@ const hasReachedFire = computed(
 const hasNoData = computed(
   () => !ynab.loadingMonths && last12Months.value.length === 0 && !ynab.monthsError
 )
+
+const avgMonthlySavings = computed(() => {
+  if (last12Months.value.length === 0) return 0
+  if (selectedCategoriesMonthly.value !== null) {
+    return avgMonthlyIncome.value - selectedCategoriesMonthly.value
+  }
+  return (
+    last12Months.value.reduce((sum, m) => sum + m.income + m.activity, 0) /
+    last12Months.value.length /
+    1000
+  )
+})
+
+const monthsToFire = computed(() => {
+  if (avgMonthlySavings.value <= 0 || hasReachedFire.value) return null
+  return remaining.value / avgMonthlySavings.value
+})
+
+const yearsToFire = computed(() => (monthsToFire.value === null ? null : monthsToFire.value / 12))
+
+const estimatedFireDate = computed(() => {
+  if (monthsToFire.value === null) return null
+  const d = new Date()
+  d.setDate(1)
+  d.setMonth(d.getMonth() + Math.ceil(monthsToFire.value))
+  return d
+})
+
+const formattedFireDate = computed(() => {
+  if (!estimatedFireDate.value) return '—'
+  return estimatedFireDate.value.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+})
+
+const yearsAwayLabel = computed(() => {
+  if (yearsToFire.value === null) return ''
+  const y = Math.ceil(yearsToFire.value)
+  return `~${y} ${y === 1 ? 'year' : 'years'} away`
+})
+
+const chartYears = computed(() =>
+  yearsToFire.value === null ? 40 : Math.min(yearsToFire.value + 2, 40)
+)
+
+const projectionPoints = computed(() => {
+  if (retirementTarget.value === 0) return []
+  const totalMonths = Math.ceil(chartYears.value * 12)
+  const points = []
+  for (let i = 0; i <= totalMonths; i++) {
+    const value = portfolioValue.value + avgMonthlySavings.value * i
+    const progress = Math.min(100, (value / retirementTarget.value) * 100)
+    points.push({ monthIndex: i, progress })
+  }
+  return points
+})
 </script>
 
 <template>
@@ -208,6 +263,42 @@ const hasNoData = computed(
         </div>
         <p v-if="hasReachedFire" class="text-green-400 text-sm mt-3 text-center font-medium">
           Congratulations — you are financially independent!
+        </p>
+      </div>
+
+      <div v-if="avgMonthlySavings > 0 && !hasReachedFire">
+        <h3 class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3">
+          FIRE Projection
+        </h3>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="bg-slate-800 rounded-xl p-6">
+            <p class="text-slate-400 text-sm mb-1">Avg Monthly Savings</p>
+            <p class="text-2xl font-bold text-white">{{ formatCurrency(avgMonthlySavings) }}</p>
+          </div>
+          <div class="bg-slate-800 rounded-xl p-6">
+            <p class="text-slate-400 text-sm mb-1">Estimated FIRE Date</p>
+            <p class="text-2xl font-bold text-white">{{ formattedFireDate }}</p>
+            <p class="text-slate-400 text-sm mt-1">{{ yearsAwayLabel }}</p>
+          </div>
+        </div>
+        <div class="bg-slate-800 rounded-xl p-6">
+          <FireProgressChart
+            :points="projectionPoints"
+            :total-months="Math.ceil(chartYears * 12)"
+            :fire-month-index="monthsToFire !== null ? Math.ceil(monthsToFire) : null"
+            :current-progress="fireProgress"
+          />
+        </div>
+      </div>
+
+      <div
+        v-else-if="avgMonthlySavings <= 0 && !hasReachedFire && last12Months.length > 0"
+        class="bg-slate-800 rounded-xl p-6"
+      >
+        <p class="text-slate-400 text-sm mb-1">Avg Monthly Savings</p>
+        <p class="text-2xl font-bold text-amber-400">{{ formatCurrency(avgMonthlySavings) }}</p>
+        <p class="text-slate-500 text-sm mt-2">
+          Recent spending exceeds income — no FIRE projection available.
         </p>
       </div>
 
