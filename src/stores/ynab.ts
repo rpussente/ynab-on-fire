@@ -8,9 +8,29 @@ export const YNAB_ACCESS_TOKEN = 'YNAB_ACCESS_TOKEN'
 const SELECTED_ACCOUNT_IDS_KEY = 'ynab-on-fire:selected-account-ids'
 const SELECTED_CATEGORY_IDS_KEY = 'ynab-on-fire:selected-category-ids'
 
+/** YNAB rejects very large payloads, so long exports go up in batches. */
+const IMPORT_BATCH_SIZE = 500
+
 export interface Ynab {
   clientId: string
   redirectUri: string
+}
+
+/**
+ * Pull the human-readable `detail` out of a YNAB API error, which arrives as
+ * `{ error: { id, name, detail } }`. Returns null for anything else, so callers
+ * can fall back to their own message.
+ */
+function extractApiErrorDetail(err: unknown): string | null {
+  const detail = (err as { error?: { detail?: unknown } })?.error?.detail
+  return typeof detail === 'string' && detail !== '' ? detail : null
+}
+
+export interface ImportResult {
+  /** Transactions YNAB actually created. */
+  imported: number
+  /** Transactions YNAB already held under the same import_id. */
+  duplicates: number
 }
 
 export const useYnabStore = defineStore('ynab', () => {
@@ -41,6 +61,10 @@ export const useYnabStore = defineStore('ynab', () => {
   const loadingCategories = ref(false)
   const categoriesError = ref<string | null>(null)
 
+  const importingTransactions = ref(false)
+  const importError = ref<string | null>(null)
+  const importResult = ref<ImportResult | null>(null)
+
   const authUri = computed(
     () =>
       `https://app.ynab.com/oauth/authorize?client_id=${apiConfig.value.clientId}&redirect_uri=${apiConfig.value.redirectUri}&response_type=token`
@@ -64,6 +88,8 @@ export const useYnabStore = defineStore('ynab', () => {
     categoryGroups.value = []
     selectedCategoryIds.value = []
     categoriesError.value = null
+    importError.value = null
+    importResult.value = null
   }
 
   function clearSelectedBudget() {
@@ -75,6 +101,8 @@ export const useYnabStore = defineStore('ynab', () => {
     categoryGroups.value = []
     selectedCategoryIds.value = []
     categoriesError.value = null
+    importError.value = null
+    importResult.value = null
   }
 
   function selectBudget(budget: ynab.BudgetSummary) {
@@ -144,6 +172,47 @@ export const useYnabStore = defineStore('ynab', () => {
     }
   }
 
+  /**
+   * Create transactions in YNAB.
+   *
+   * Each transaction should carry an `import_id`; YNAB scopes that key per
+   * account and silently declines any it already holds, reporting them in
+   * `duplicate_import_ids`. That is what makes re-importing an overlapping
+   * date range safe.
+   */
+  async function importTransactions(budgetId: string, transactions: ynab.NewTransaction[]) {
+    if (api.value == null) return null
+    importingTransactions.value = true
+    importError.value = null
+    importResult.value = null
+    try {
+      let imported = 0
+      let duplicates = 0
+      for (let i = 0; i < transactions.length; i += IMPORT_BATCH_SIZE) {
+        const batch = transactions.slice(i, i + IMPORT_BATCH_SIZE)
+        const res = await api.value.transactions.createTransaction(budgetId, {
+          transactions: batch
+        })
+        imported += res.data.transactions?.length ?? 0
+        duplicates += res.data.duplicate_import_ids?.length ?? 0
+      }
+      importResult.value = { imported, duplicates }
+      return importResult.value
+    } catch (err) {
+      // Surface YNAB's own explanation when there is one — an expired token or
+      // a rejected field is far more actionable than a generic failure.
+      importError.value = extractApiErrorDetail(err) ?? 'Failed to import transactions'
+      return null
+    } finally {
+      importingTransactions.value = false
+    }
+  }
+
+  function clearImportResult() {
+    importError.value = null
+    importResult.value = null
+  }
+
   if (isAuthorised.value) {
     api.value = new ynab.api(accessToken.value)
     loadBudgets()
@@ -173,6 +242,11 @@ export const useYnabStore = defineStore('ynab', () => {
     selectedCategoryIds,
     loadingCategories,
     categoriesError,
-    loadCategories
+    loadCategories,
+    importingTransactions,
+    importError,
+    importResult,
+    importTransactions,
+    clearImportResult
   }
 })
