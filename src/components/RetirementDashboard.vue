@@ -181,6 +181,12 @@ const chartFireMonthIndex = computed(() =>
         >
           &larr; Change accounts
         </button>
+        <RouterLink
+          to="/import"
+          class="text-indigo-400 hover:text-indigo-300 font-medium transition-colors text-sm"
+        >
+          Import from SEB
+        </RouterLink>
         <button
           @click="ynab.clearSelectedBudget()"
           class="text-slate-400 hover:text-white font-medium transition-colors text-sm"

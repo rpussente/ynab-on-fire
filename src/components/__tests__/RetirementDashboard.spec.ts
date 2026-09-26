@@ -1,8 +1,12 @@
 import { beforeEach, describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { config, mount, RouterLinkStub } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import { useYnabStore } from '@/stores/ynab'
 import RetirementDashboard from '../RetirementDashboard.vue'
+
+// The dashboard links to the SEB import route, so RouterLink needs resolving
+// without pulling a real router into every mount.
+config.global.stubs = { RouterLink: RouterLinkStub }
 
 describe('RetirementDashboard', () => {
   let ynab: ReturnType<typeof useYnabStore>
@@ -106,6 +110,16 @@ describe('RetirementDashboard', () => {
     const fiveBtn = wrapper.findAll('button').find((b) => b.text().trim() === '5%')
     await fiveBtn!.trigger('click')
     expect(wrapper.text()).toContain('480,000')
+  })
+
+  it('links to the SEB import screen', () => {
+    const wrapper = mount(RetirementDashboard)
+    const link = wrapper
+      .findAllComponents(RouterLinkStub)
+      .find((l) => l.text().includes('Import from SEB'))
+
+    expect(link).toBeTruthy()
+    expect(link!.props('to')).toBe('/import')
   })
 
   it('emits change-accounts when navigation button clicked', async () => {
