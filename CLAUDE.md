@@ -10,6 +10,8 @@ npm run dev       # dev server (or: make dev  — opens browser automatically)
 npm run test:unit # run all unit tests with Vitest
 npm run test:unit -- --reporter=verbose src/components/__tests__/RetirementDashboard.spec.ts  # single test file
 npm run build     # type-check + production build
+make mcp          # install + build the MCP server (mcp-server/)
+make mcp-auth     # authorise the MCP server with YNAB in the browser
 ```
 
 ## Branching & PRs
@@ -67,6 +69,10 @@ Loads monthly data via `ynab.loadMonths()` on `onMounted`.
 ### Styling
 
 Tailwind CSS v4 (via `@tailwindcss/vite`). The design system uses a dark slate palette (`slate-800/900/950`) with indigo/purple accents. Do not modify global styles in `App.vue` or `HomeView.vue` unless explicitly instructed.
+
+### MCP server (`mcp-server/`)
+
+A separate Node package: a local stdio MCP server exposing read-only YNAB tools. It reuses the OAuth `clientId` from `src/ynab.config.json`, runs the OAuth flow via a temporary callback server on `http://localhost:8765/ynab-mcp-server`, and stores the token in `~/.config/ynab-on-fire/mcp-token.json`. stdout is reserved for the MCP protocol — log to stderr only. MCP clients run `dist/`, so rebuild with `make mcp` after changes. See `mcp-server/README.md`.
 
 ### Config
 
